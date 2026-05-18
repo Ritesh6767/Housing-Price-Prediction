@@ -54,10 +54,15 @@ def load_data():
 @st.cache_resource
 def load_model():
     try:
-        return joblib.load('rf_model.pkl')
+        model = joblib.load('rf_model.pkl')
+        # Patch for scikit-learn version mismatch (1.3 -> 1.4/1.5)
+        if hasattr(model, 'estimators_'):
+            for tree in model.estimators_:
+                if not hasattr(tree, 'monotonic_cst'):
+                    tree.monotonic_cst = None
+        return model
     except:
         return None
-
 df = load_data()
 model = load_model()
 
